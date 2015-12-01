@@ -3,9 +3,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:beans="http://www.springframework.org/schema/beans"
 	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
 	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
 	
@@ -21,8 +23,40 @@
 		<beans:property name="suffix" value=".jsp" />
 	</beans:bean>
 	
+    <!-- DB접근을 위한 DataSource -->
+    <!--  
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >
+        <property name="driverClassName"><value>oracle.jdbc.driver.MysqlDriver</value></property>
+        <property name="url"><value>jdbc:oracle:thin:@localhost:1521:onj</value></property>
+        <property name="username"><value>scott</value></property>
+        <property name="password"><value>tiger</value></property>
+    </bean> --> 
+	<beans:bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	    <beans:property name="driverClassName" value="com.mysql.jdbc.Driver" />
+	    <beans:property name="url" value="jdbc:mysql://192.168.230.129:3306/opticmate" />
+	    <beans:property name="username" value="opticmate" />
+	    <beans:property name="password" value="opticmate" />
+	</beans:bean>      	
 	<context:component-scan base-package="au.com.opticmate" />
 	
+	<!--  하이버네이트 세션을 위한 세션팩토리 -->
+	<beans:bean id="sessionFactory"	class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="configLocation" value="classpath:hibernate.cfg.xml" />
+	</beans:bean>	
 	
-	
+	<tx:annotation-driven />
+	<!-- 하이버네이트 트랜잭션을 위한 TransactionManager -->
+	<beans:bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<beans:property name="sessionFactory" ref="sessionFactory" />
+	</beans:bean>
+		
+	<beans:bean id="testDao" class="dao.TestDaoImpl">
+	    <!-- 생성자 주입 -->
+		<beans:constructor-arg>
+			<beans:ref bean="sessionFactory" />
+		</beans:constructor-arg>
+	</beans:bean>
+			
 </beans:beans>
